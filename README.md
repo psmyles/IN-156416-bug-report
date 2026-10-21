@@ -2,7 +2,7 @@
 
 Classic Visual Effect Graph outputs, such as "Output Particle URP Lit Quad/Mesh/Octagon/Triangle" and "Output ParticleStrip URP Lit Quad", generate shaders without the `"RenderPipeline"="UniversalPipeline"` SubShader tag. URP only applies its build-time keyword prefiltering ("settings filtering") to shaders with that tag. The forward pass of every URP Lit output therefore enumerates its full 1,966,080-variant space on every player build, even when every variant it keeps is already in the shader cache.
 
-In this sample, that is 19 s of a 24.8 s warm build. In our production project, with 150 such outputs, it was about 30 minutes of a 34-minute warm build.
+In this sample, that is 19 s of a 24.8 s warm build. In our production project, with 150 such outputs, it was about 30 minutes of a 34-minute warm build. We can't share the production project for confidentiality reasons.
 
 ## Environment
 
@@ -13,9 +13,9 @@ In this sample, that is 19 s of a 24.8 s warm build. In our production project, 
 
 ## Branches
 
-| Branch | Contents |
-|---|---|
-| `main` | Stock packages. Reproduces the issue. Log: `BuildLogs/main-warm-build.log` |
+| Branch       | Contents                                                                                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `main`       | Stock packages. Reproduces the issue. Log: `BuildLogs/main-warm-build.log`                                                                                            |
 | `workaround` | Visual Effect Graph embedded in `Packages/` with a one-line change that adds the tag. Logs: `BuildLogs/main-warm-build.log` and `BuildLogs/workaround-warm-build.log` |
 
 ## Steps to reproduce
@@ -35,6 +35,7 @@ In this sample, that is 19 s of a 24.8 s warm build. In our production project, 
    - Writes lines starting with `[IN-156416]` to the log: the build duration, the duration of each build step, and how many generated VFX shaders have the tag.
 
    A build from **File > Build Profiles > Windows > Build** shows the same shader statistics, without the timestamps.
+
 3. In the log, search for `Compiling shader "Hidden/VFX/`. For each URP Lit output, compare `Full variant space` with `After settings filtering` in the forward fragment pass.
 
 ## Expected result
@@ -71,16 +72,16 @@ The same pass on the `workaround` branch (`BuildLogs/workaround-warm-build.log`,
 
 ## Results: warm builds, same machine and Library
 
-| | `main` (stock) | `workaround` (tag added) |
-|---|---|---|
-| Player build (`[IN-156416] Player build finished`) | **24.8 s** | **5.9 s** |
-| Build step "Writing asset files" | 21.1 s | 2.1 s |
-| Generated VFX shaders with the `RenderPipeline` tag | 15 of 100 | 100 of 100 |
-| 24 URP Lit outputs: full variant space (all passes) | 47,961,776 | 47,961,776 |
-| 24 URP Lit outputs: after settings filtering | 47,961,776 | 1,616 |
-| 24 URP Lit outputs: variant preparation time ("Processed in", summed) | 19.0 s | 0.0 s |
-| 24 URP Lit outputs: variants kept after stripping | 1,136 | 752 |
-| Variants compiled / local cache hits (all shaders) | 0 / 4,250 | 0 / 3,616 |
+|                                                                       | `main` (stock) | `workaround` (tag added) |
+| --------------------------------------------------------------------- | -------------- | ------------------------ |
+| Player build (`[IN-156416] Player build finished`)                    | **24.8 s**     | **5.9 s**                |
+| Build step "Writing asset files"                                      | 21.1 s         | 2.1 s                    |
+| Generated VFX shaders with the `RenderPipeline` tag                   | 15 of 100      | 100 of 100               |
+| 24 URP Lit outputs: full variant space (all passes)                   | 47,961,776     | 47,961,776               |
+| 24 URP Lit outputs: after settings filtering                          | 47,961,776     | 1,616                    |
+| 24 URP Lit outputs: variant preparation time ("Processed in", summed) | 19.0 s         | 0.0 s                    |
+| 24 URP Lit outputs: variants kept after stripping                     | 1,136          | 752                      |
+| Variants compiled / local cache hits (all shaders)                    | 0 / 4,250      | 0 / 3,616                |
 
 Both builds compiled nothing: every kept variant came from the shader cache. The whole difference is time spent enumerating and stripping variants that settings filtering would have removed.
 
