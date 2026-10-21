@@ -1,5 +1,7 @@
 # IN-156416: classic VFX Graph URP outputs skip URP shader keyword prefiltering
 
+> **This is the `workaround` branch.** It is `main` plus `Packages/com.unity.visualeffectgraph`, an embedded copy of Visual Effect Graph 17.3.0 with one change: line 725 of `Editor/Models/Contexts/VFXAbstractParticleOutput.cs` adds `"RenderPipeline"="UniversalPipeline"` to the generated SubShader tags. Build with the same command as below. The warm build log is `BuildLogs/workaround-warm-build.log`; the log from `main` is kept next to it for comparison. To see the change, diff that file against the built-in package in `<Unity 6000.3.26f1 install>\Editor\Data\Resources\PackageManager\BuiltInPackages\com.unity.visualeffectgraph`.
+
 Classic Visual Effect Graph outputs, such as "Output Particle URP Lit Quad/Mesh/Octagon/Triangle" and "Output ParticleStrip URP Lit Quad", generate shaders without the `"RenderPipeline"="UniversalPipeline"` SubShader tag. URP only applies its build-time keyword prefiltering ("settings filtering") to shaders with that tag. The forward pass of every URP Lit output therefore enumerates its full 1,966,080-variant space on every player build, even when every variant it keeps is already in the shader cache.
 
 In this sample, that is 19 s of a 24.8 s warm build. In our production project, with 150 such outputs, it was about 30 minutes of a 34-minute warm build.
