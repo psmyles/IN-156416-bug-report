@@ -181,9 +181,9 @@
       }
     },
     "com.unity.visualeffectgraph": {
-      "version": "17.3.0",
+      "version": "file:com.unity.visualeffectgraph",
       "depth": 0,
-      "source": "builtin",
+      "source": "embedded",
       "dependencies": {
         "com.unity.shadergraph": "17.3.0",
         "com.unity.render-pipelines.core": "17.3.0"
